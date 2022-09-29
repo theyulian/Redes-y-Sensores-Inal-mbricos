@@ -4,11 +4,13 @@
 #include "WiFi.h"
 #define herr 4
 
+uint8_t broadcastAddress2[] = {0x84, 0xcc, 0xa8, 0x7a, 0x23, 0x88};
 uint8_t broadcastAddress[] = {0x58, 0xBF, 0x25, 0x33, 0x05, 0x28};
 
 typedef struct struct_message {
     int id; // must be unique for each sender board
     float dato1;
+    float flagtosend;
 } struct_message;
 
 struct_message myData;
@@ -42,6 +44,15 @@ void setup(void)
     Serial.println("Failed to add peer");
     return;
   }
+  memcpy(peerInfo.peer_addr, broadcastAddress2, 6);
+  peerInfo.channel = 1;
+  peerInfo.encrypt = false;
+  
+  // Add peer
+  if (esp_now_add_peer(&peerInfo) != ESP_OK){
+    Serial.println("Failed to add peer");
+    return;
+  }
 }
 
 void loop(void) 
@@ -53,16 +64,54 @@ void loop(void)
   myData.id=17;
   myData.dato1=herradura;
 
-
+  float tiempo= micros();
   // Send message via ESP-NOW
+  myData.flagtosend=0;
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
-   
   if (result == ESP_OK) {
-    Serial.println("Sent with success");
-  }
-  else {
-    Serial.println("Error sending the data");
-  }
+    tiempo=micros() - tiempo;
+    Serial.print("tiempo1: ");
+    Serial.println( tiempo);
     
-  delay(2000);
+  }
+  else{
+    tiempo=100000;
+  }
+
+  float tiempo2= micros();
+  esp_err_t result2 = esp_now_send(broadcastAddress2, (uint8_t *) &myData, sizeof(myData));
+  if (result2 == ESP_OK) {
+    
+    tiempo2=micros() - tiempo2;
+    Serial.print("tiempo_2: ");
+    Serial.println(tiempo2);
+
+  }
+  else{
+    tiempo2=100000;
+  }
+  myData.flagtosend=1;
+  if(tiempo>=tiempo2){
+    esp_err_t result = esp_now_send(broadcastAddress2, (uint8_t *) &myData, sizeof(myData));
+      if (result == ESP_OK) {
+         Serial.println("Sent with success");
+    
+      }
+      else {
+        Serial.println("Error sending the data");
+      }
+  }
+  else{
+      esp_err_t result2 = esp_now_send(broadcastAddress, (uint8_t *) &myData, sizeof(myData));
+      if (result2 == ESP_OK) {
+        Serial.println("5");
+        Serial.println("Sent with success");
+      }
+      else {
+        Serial.println("Error sending the data");
+      }
+  }
+  tiempo=0;
+  tiempo2=0;
+  delay(1000);
 }

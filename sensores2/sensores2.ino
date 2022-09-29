@@ -24,6 +24,7 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
   mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
   memcpy(&myData, incomingData, sizeof(myData));
+  
   if(mac_addr[0]==0x84 && mac_addr[1]==0xcc && mac_addr[2]==0xa8 && mac_addr[3]==0x2c && mac_addr[4]==0x99 && mac_addr[5]==0x5c){
     if(myData.flag==1){
         Serial.print("Packet received from: ");
@@ -43,7 +44,6 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
         Serial.printf("%f",boardsStruct[myData.id-1].dato1);
         Serial.println();
     }
-
   }
     if(mac_addr[0]==0xac && mac_addr[1]==0x67 && mac_addr[2]==0xb2 && mac_addr[3]==0x38 && mac_addr[4]==0x5a && mac_addr[5]==0x44){
     if(myData.flag==1){
